@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0u7kph7" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.0.0">
+  <bpmn:process id="transactional-orchestrator" name="Transactional Orchestrator" isExecutable="true">
+    <bpmn:startEvent id="start-flows" camunda:asyncBefore="true">
+      <bpmn:outgoing>Flow_1ncwmow</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1ncwmow" sourceRef="start-flows" targetRef="Gateway_10piael" />
+    <bpmn:serviceTask id="getTaxes" name="Get Taxes" camunda:type="external" camunda:topic="getTaxes">
+      <bpmn:incoming>withHoldingsAndDeposits</bpmn:incoming>
+      <bpmn:outgoing>Flow_0uepbvz</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="depositMoney" name="Deposit Money" camunda:type="external" camunda:topic="depositMoney">
+      <bpmn:incoming>Flow_002ppbo</bpmn:incoming>
+      <bpmn:outgoing>Flow_0feppvz</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="accountingRecordTariff" name="Accounting Record Tariff" camunda:type="external" camunda:topic="accountingRecordTariff">
+      <bpmn:incoming>accountingRecords</bpmn:incoming>
+      <bpmn:outgoing>Flow_1dzx5ba</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="endFlow1" name="endFlow1">
+      <bpmn:incoming>Flow_0feppvz</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_10piael" name="MessageType?" default="Flow_181kd0f">
+      <bpmn:incoming>Flow_1ncwmow</bpmn:incoming>
+      <bpmn:outgoing>withHoldingsAndDeposits</bpmn:outgoing>
+      <bpmn:outgoing>accountingRecords</bpmn:outgoing>
+      <bpmn:outgoing>Flow_181kd0f</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="withHoldingsAndDeposits" name="With Holdings And Deposits" sourceRef="Gateway_10piael" targetRef="getTaxes">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{messageType == 'withholdingsAndDeposits' }</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0feppvz" sourceRef="depositMoney" targetRef="endFlow1" />
+    <bpmn:sequenceFlow id="accountingRecords" name="Accounting Records" sourceRef="Gateway_10piael" targetRef="accountingRecordTariff">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${messageType == 'accountingRecords' }</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0uepbvz" sourceRef="getTaxes" targetRef="accountingRecordTaxes" />
+    <bpmn:endEvent id="endFlow2" name="endFlow2">
+      <bpmn:incoming>Flow_1dzx5ba</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1dzx5ba" sourceRef="accountingRecordTariff" targetRef="endFlow2" />
+    <bpmn:sequenceFlow id="Flow_002ppbo" sourceRef="accountingRecordTaxes" targetRef="depositMoney" />
+    <bpmn:serviceTask id="accountingRecordTaxes" name="Accounting Record Taxes" camunda:type="external" camunda:topic="accountingRecordTaxes">
+      <bpmn:incoming>Flow_0uepbvz</bpmn:incoming>
+      <bpmn:outgoing>Flow_002ppbo</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_181kd0f" sourceRef="Gateway_10piael" targetRef="unexpectedMessageType" />
+    <bpmn:endEvent id="unexpectedMessageType" name="Unexpected Message Type">
+      <bpmn:incoming>Flow_181kd0f</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="transactional-orchestrator">
+      <bpmndi:BPMNEdge id="Flow_1ncwmow_di" bpmnElement="Flow_1ncwmow">
+        <di:waypoint x="215" y="227" />
+        <di:waypoint x="305" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16wvryi_di" bpmnElement="withHoldingsAndDeposits">
+        <di:waypoint x="355" y="227" />
+        <di:waypoint x="470" y="227" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="380" y="213" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qgg1yo_di" bpmnElement="accountingRecords">
+        <di:waypoint x="330" y="252" />
+        <di:waypoint x="330" y="360" />
+        <di:waypoint x="470" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="328" y="373" width="55" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0uepbvz_di" bpmnElement="Flow_0uepbvz">
+        <di:waypoint x="570" y="227" />
+        <di:waypoint x="620" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dzx5ba_di" bpmnElement="Flow_1dzx5ba">
+        <di:waypoint x="570" y="360" />
+        <di:waypoint x="652" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02yrmk7_di" bpmnElement="Flow_0feppvz">
+        <di:waypoint x="870" y="227" />
+        <di:waypoint x="962" y="227" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="685" y="99" width="48" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_002ppbo_di" bpmnElement="Flow_002ppbo">
+        <di:waypoint x="720" y="227" />
+        <di:waypoint x="770" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_181kd0f_di" bpmnElement="Flow_181kd0f">
+        <di:waypoint x="330" y="202" />
+        <di:waypoint x="330" y="100" />
+        <di:waypoint x="502" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start-flows">
+        <dc:Bounds x="179" y="209" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0lja6ky_di" bpmnElement="getTaxes">
+        <dc:Bounds x="470" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1gof244_di" bpmnElement="accountingRecordTariff">
+        <dc:Bounds x="470" y="320" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_10piael_di" bpmnElement="Gateway_10piael" isMarkerVisible="true">
+        <dc:Bounds x="305" y="202" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="293" y="172" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_09yoxl2_di" bpmnElement="depositMoney">
+        <dc:Bounds x="770" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ib85id_di" bpmnElement="accountingRecordTaxes">
+        <dc:Bounds x="620" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0c13mlc_di" bpmnElement="endFlow1">
+        <dc:Bounds x="962" y="209" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="956" y="252" width="48" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_01yrts2_di" bpmnElement="endFlow2">
+        <dc:Bounds x="652" y="342" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="646" y="385" width="48" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ik5pog_di" bpmnElement="unexpectedMessageType">
+        <dc:Bounds x="502" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="487" y="125" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
